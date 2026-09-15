@@ -9,3 +9,5 @@ tqdm
 jupyter
 lightgbm
 pyarrow
+torch
+ipykernel
