@@ -1,0 +1,10 @@
+venv/
+data/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.vscode/
+*.cbm
+*.cbs
+*.pt
+catboost_info/
