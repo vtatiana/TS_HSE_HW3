@@ -42,10 +42,13 @@ Corporación Favorita (Эквадор). Задача — регрессия на
 в 4 раза больше аутсайдера (№10).
 
 ### Графики
-- results/01_sales_distribution.png
-- results/02_seasonality.png
-- results/03_promo_effect.png
-- results/04_top_stores_items.png
+![Распределение продаж](01_sales_distribution.png)
+
+![Сезонность](02_seasonality.png)
+
+![Эффект промо](03_promo_effect.png)
+
+![Топ магазинов и товаров](04_top_stores_items.png)
 
 ## 3. Методология эксперимента
 
@@ -289,3 +292,12 @@ RMSLE = 0.4677. На полном Kaggle-тесте — 1.0339.
 2. **Промо-фичи:** лаги промо, типы промо, длительность акций.
 3. **Ансамбль CatBoost + LSTM** — усреднение прогнозов.
 4. **TFT** (Temporal Fusion Transformer) на GPU вместо LSTM.
+## 7. Скриншоты
+
+**Kaggle Submissions:**
+
+![Kaggle Submissions](kaggle_submissions.png)
+
+**GitHub-репозиторий:**
+
+![GitHub репозиторий](github_repo.png)
