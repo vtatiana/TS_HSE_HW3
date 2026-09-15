@@ -1,9 +1,6 @@
 # TS HSE HW3 — Favorita Sales Forecasting
 
-![Python](https://img.shields.io/badge/Python-3.14-blue)
-![CatBoost](https://img.shields.io/badge/CatBoost-ML-green)
-![LSTM](https://img.shields.io/badge/LSTM-DL-purple)
-![RMSLE](https://img.shields.io/badge/RMSLE-0.4677-yellow)
+
 
 Исходная задача проекта: - Прогноз дневных продаж для сети магазинов Corporación Favorita (Эквадор).
 Кратко, что получилось сделать: catboost дал rmsle **0.4677** на валидации и **1.0339** на kaggleборде.
@@ -13,7 +10,7 @@
 - `src/` — весь код
 - `results/` — отчёт, графики, ноутбук
 - `submissions/` — submission для kaggle
-- `data/` — сюда кладём исходные csv (в git не пушим)
+- `data/` — сюда кладём исходные csv 
 
 ## Данные с kaggle
 
