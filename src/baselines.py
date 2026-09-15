@@ -1,103 +1,101 @@
-"""Бейзлайн-модели."""
+"""бейзлайн-модели для сравнения"""
 import numpy as np
 import pandas as pd
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 from statsmodels.tsa.forecasting.theta import ThetaModel
-from config import DATA_DIR, RESULTS_DIR
+from config import DATA_DIR,RESULTS_DIR
 
-TRAIN_END = "2016-12-31"
-VAL_START = "2017-01-01"
-VAL_END = "2017-08-15"
-
-
-def rmsle(y_true, y_pred):
-    y_true = np.clip(y_true, 0, None)
-    y_pred = np.clip(y_pred, 0, None)
-    return np.sqrt(np.mean((np.log1p(y_pred) - np.log1p(y_true)) ** 2))
+TRAIN_END= "2016-12-31"
+VAL_START= "2017-01-01"
+VAL_END= "2017-08-15"
 
 
-def naive(y_train, n):
-    return np.full(n, y_train[-1])
+def rmsle(yt,yp):
+    yt= np.clip(yt,0,None)
+    yp= np.clip(yp,0,None)
+    return   np.sqrt(np.mean((np.log1p(yp) -np.log1p(yt))**2))
 
 
-def seasonal_naive(y_train, n, season=7):
-    if len(y_train) < season:
-        return np.full(n, y_train[-1])
-    return np.array([y_train[-season + i % season] for i in range(n)])
+def naive(ytr,n):
+    return   np.full(n,ytr[-1])
+
+def seasonal_naive(ytr,n,season=7):
+    if len(ytr) < season:
+        return   np.full(n,ytr[-1])
+    return   np.array([ytr[-season +i%season] for i in range(n)])
 
 
-def auto_ets(y_train, n):
+def auto_ets(ytr,n):
     try:
-        model = ExponentialSmoothing(y_train, seasonal_periods=7, trend="add", seasonal="add")
-        fit = model.fit(optimized=True)
-        return np.clip(np.asarray(fit.forecast(n)), 0, None)
+        m= ExponentialSmoothing(ytr,seasonal_periods=7,trend="add",seasonal="add")
+        f= m.fit(optimized=True)
+        return   np.clip(np.asarray(f.forecast(n)),0,None)
     except Exception as e:
-        print(f"    ETS failed: {e}, fallback to naive")
-        return naive(y_train, n)
+        print(f"    ets не смог: {e},откат к naive")
+        return   naive(ytr,n)
 
-
-def auto_theta(y_train, n):
+def auto_theta(ytr,n):
     try:
-        model = ThetaModel(y_train, period=7)
-        fit = model.fit()
-        return np.clip(np.asarray(fit.forecast(n)), 0, None)
+        m= ThetaModel(ytr,period=7)
+        f= m.fit()
+        return   np.clip(np.asarray(f.forecast(n)),0,None)
     except Exception as e:
-        print(f"    Theta failed: {e}, fallback to naive")
-        return naive(y_train, n)
+        print(f"    theta не смог: {e},откат к naive")
+        return   naive(ytr,n)
 
 
-def seasonal_naive_per_item(train_part, val_part, season=7):
-    print("\nSeasonalNaive на уровне store-item...")
-    last_week = (train_part.sort_values("date")
-                 .groupby(["store_nbr", "item_nbr"]).tail(season).copy())
-    last_week["day_rank"] = last_week.groupby(["store_nbr", "item_nbr"]).cumcount()
+def sn_item(tr_part,val_part,season=7):
+    print("\nseasonal naive на уровне store-item")
+    lw= (tr_part.sort_values("date")
+                .groupby(["store_nbr","item_nbr"]).tail(season).copy())
+    lw["day_rank"]= lw.groupby(["store_nbr","item_nbr"]).cumcount()
 
-    lookup = last_week.set_index(["store_nbr", "item_nbr", "day_rank"])["unit_sales"]
+    lk= lw.set_index(["store_nbr","item_nbr","day_rank"])["unit_sales"]
 
-    val = val_part[["date", "store_nbr", "item_nbr", "unit_sales"]].copy()
-    val["day_rank"] = (val["date"] - val["date"].min()).dt.days % season
-    val["key"] = list(zip(val["store_nbr"], val["item_nbr"], val["day_rank"]))
-    lookup_dict = lookup.to_dict()
-    val["pred"] = val["key"].map(lookup_dict).fillna(0).clip(lower=0)
+    val= val_part[["date","store_nbr","item_nbr","unit_sales"]].copy()
+    val["day_rank"]= (val["date"] -val["date"].min()).dt.days%season
+    val["key"]= list(zip(val["store_nbr"],val["item_nbr"],val["day_rank"]))
+    lk_d= lk.to_dict()
+    val["pred"]= val["key"].map(lk_d).fillna(0).clip(lower=0)
 
-    y_true = np.log1p(val["unit_sales"].clip(lower=0).values)
-    y_pred = np.log1p(val["pred"].values)
-    return np.sqrt(np.mean((y_pred - y_true) ** 2))
+    yt= np.log1p(val["unit_sales"].clip(lower=0).values)
+    yp= np.log1p(val["pred"].values)
+    return   np.sqrt(np.mean((yp -yt)**2))
 
 
 def main():
-    print("Загружаем данные...")
-    train = pd.read_parquet(DATA_DIR / "train_subsample.parquet")
+    print("загружаем данные")
+    tr= pd.read_parquet(DATA_DIR/"train_subsample.parquet")
 
-    train_part = train[train["date"] <= TRAIN_END]
-    val_part = train[(train["date"] >= VAL_START) & (train["date"] <= VAL_END)]
-    print(f"Train: {train_part.shape}, Val: {val_part.shape}")
+    tr_part= tr[tr["date"] <= TRAIN_END]
+    val_part= tr[(tr["date"] >= VAL_START) & (tr["date"] <= VAL_END)]
+    print(f"train: {tr_part.shape},val: {val_part.shape}")
 
-    y_train = train_part.groupby("date")["unit_sales"].sum().sort_index().values
-    y_val = val_part.groupby("date")["unit_sales"].sum().sort_index().values
-    print(f"Train дней: {len(y_train)}, Val дней: {len(y_val)}")
+    ytr= tr_part.groupby("date")["unit_sales"].sum().sort_index().values
+    yval= val_part.groupby("date")["unit_sales"].sum().sort_index().values
+    print(f"train дней: {len(ytr)},val дней: {len(yval)}")
 
-    n = len(y_val)
-    results = {}
+    n= len(yval)
+    res= {}
 
-    print("\nОбучаем бейзлайны...")
-    for name, fn in [("Naive", naive), ("SeasonalNaive", seasonal_naive),
-                     ("auto_ets", auto_ets), ("auto_theta", auto_theta)]:
-        print(f"  {name}...")
-        pred = fn(y_train, n)
-        score = rmsle(y_val, pred)
-        results[name] = score
-        print(f"    RMSLE = {score:.4f}")
+    print("\nобучаем бейзлайны")
+    for nm,fn in [("Naive",naive),("SeasonalNaive",seasonal_naive),
+                  ("auto_ets",auto_ets),("auto_theta",auto_theta)]:
+        print(f"  {nm}")
+        pr= fn(ytr,n)
+        sc= rmsle(yval,pr)
+        res[nm]= sc
+        print(f"    rmsle = {sc:.4f}")
 
-    score_sn_item = seasonal_naive_per_item(train_part, val_part)
-    print(f"  SeasonalNaive (store-item): RMSLE = {score_sn_item:.4f}")
-    results["SeasonalNaive_itemlevel"] = score_sn_item
+    sn= sn_item(tr_part,val_part)
+    print(f"  seasonal naive (store-item): rmsle = {sn:.4f}")
+    res["SeasonalNaive_itemlevel"]= sn
 
-    print("\n=== ИТОГ ===")
-    df = pd.DataFrame(list(results.items()), columns=["model", "RMSLE"]).sort_values("RMSLE")
+    print("\nитог")
+    df= pd.DataFrame(list(res.items()),columns=["model","RMSLE"]).sort_values("RMSLE")
     print(df.to_string(index=False))
-    df.to_csv(RESULTS_DIR / "baseline_results.csv", index=False)
-    print(f"\nСохранено: {RESULTS_DIR / 'baseline_results.csv'}")
+    df.to_csv(RESULTS_DIR/"baseline_results.csv",index=False)
+    print(f"\nсохраняем {RESULTS_DIR/'baseline_results.csv'}")
 
 
 if __name__ == "__main__":

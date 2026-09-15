@@ -1,29 +1,25 @@
-"""Конфигурация проекта."""
+"""Общая конфигурация проекта."""
 from pathlib import Path
 
-# Пути
-BASE_DIR = Path(__file__).parent.parent
-DATA_DIR = BASE_DIR / "data"
-RESULTS_DIR = BASE_DIR / "results"
-SUBMISSIONS_DIR = BASE_DIR / "submissions"
+#  базовые пути, считаем от корня проекта
+BASE_DIR= Path(__file__).parent.parent
+DATA_DIR= BASE_DIR/"data"
+RESULTS_DIR= BASE_DIR/"results"
+SUBMISSIONS_DIR= BASE_DIR/"submissions"
 
-# Колонки
-DATE_COL = "date"
-TARGET = "unit_sales"
-STORE_COL = "store_nbr"
-ITEM_COL = "item_nbr"
+#  названия колонок в Favorita
+DATE_COL= "date"
+STORE_COL= "store_nbr"
+ITEM_COL= "item_nbr"
+TARGET= "unit_sales"
 
-# Периоды для валидации
-TRAIN_START = "2013-01-01"
-TRAIN_END = "2016-12-31"
-VAL_START = "2017-01-01"
-VAL_END = "2017-08-15"
-TEST_START = "2017-08-16"
-TEST_END = "2017-08-31"
+#  разбивка по времени
+TRAIN_END= "2016-12-31"
+VAL_START= "2017-01-01"
+VAL_END= "2017-08-15"
 
-# Подвыборка (чтобы поместилось в 16 ГБ RAM)
-N_STORES = 10
-N_ITEMS = 2000
+#  полный датасет не влезает в оперативку — берём кусок
+N_STORES= 10    #  из 54
+N_ITEMS= 2000   #  из 4100
 
-# Случайное зерно
-RANDOM_STATE = 42
+RANDOM_STATE= 42
