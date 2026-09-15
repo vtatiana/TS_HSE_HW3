@@ -1,52 +1,79 @@
-# TS HSE 2025-2026 HW3: Favorita Sales Forecasting
+# TS HSE HW3 — Favorita Sales Forecasting
 
-## Описание
-Прогнозирование ежедневных продаж сети магазинов Corporación Favorita
-(Эквадор) с использованием экзогенных признаков.
+![Python](https://img.shields.io/badge/Python-3.14-blue)
+![CatBoost](https://img.shields.io/badge/CatBoost-ML-green)
+![LSTM](https://img.shields.io/badge/LSTM-DL-purple)
+![RMSLE](https://img.shields.io/badge/RMSLE-0.4677-yellow)
 
-## Данные
-Скачать с Kaggle: https://www.kaggle.com/competitions/favorita-grocery-sales-forecasting
+Исходная задача проекта: - Прогноз дневных продаж для сети магазинов Corporación Favorita (Эквадор).
+Кратко, что получилось сделать: catboost дал rmsle **0.4677** на валидации и **1.0339** на kaggleборде.
 
-Положить в папку `data/`:
-- `train.csv`, `test.csv`, `stores.csv`, `items.csv`
-- `oil.csv`, `holidays_events.csv`, `transactions.csv`
+## Что внутри проекта
+
+- `src/` — весь код
+- `results/` — отчёт, графики, ноутбук
+- `submissions/` — submission для kaggle
+- `data/` — сюда кладём исходные csv (в git не пушим)
+
+## Данные с kaggle
+
+Скачать с kaggle: https://www.kaggle.com/competitions/favorita-grocery-sales-forecasting
+
+Положили файлики в `data/`:
+- `train.csv`,`test.csv`,`stores.csv`,`items.csv`
+- `oil.csv`,`holidays_events.csv`,`transactions.csv`
 - `sample_submission.csv`
 
-## Установка
+## Установка venv внутри папки
+
+```
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
+```
 
-## Запуск
+## Запуск скриптов
 
 Полный пайплайн:
+```
 python src/run_experiment.py
+```
 
-Только подготовка данных:
+Только этап с подготовкой данных:
+```
 python src/run_experiment.py --only-prepare
+```
 
-С LSTM:
+С моделькой catboost и lstm:
+```
 python src/run_experiment.py --with-lstm
-
-## Структура
-- `src/config.py` — параметры проекта
-- `src/data_loader.py` — загрузка train
-- `src/prepare_data.py` — подготовка подвыборки
-- `src/features.py` — генерация признаков
-- `src/eda.py` — разведочный анализ
-- `src/baselines.py` — бейзлайны
-- `src/catboost_full.py` — CatBoost (ML)
-- `src/lstm_model.py` — LSTM (DL)
-- `src/error_analysis.py` — анализ ошибок
-- `src/make_submission.py` — формирование submission
-- `src/run_experiment.py` — единая точка входа
-
-## Метрика
-RMSLE (Root Mean Squared Logarithmic Error) — как в соревновании Kaggle.
+```
 
 ## Результаты
-- CatBoost: RMSLE = **0.4677** (store-item)
-- LSTM: RMSLE = **0.6054** (store-item)
-- Kaggle Public Score: **1.03390**
 
-См. `results/report.md` — полный отчёт.
+| Модель | RMSLE (store-item) |
+|---|---|
+| SeasonalNaive | 0.7883 |
+| LSTM | 0.6054 |
+| **CatBoost** | **0.4677** |
+| Kaggle Public | 1.03390 |
+
+Полный отчёт можно посмотреть в `results/report.md`.
+
+## Все файлы проекта
+
+- `src/config.py` — параметры
+- `src/data_loader.py` — загрузка train
+- `src/prepare_data.py` — подвыборка для модели
+- `src/features.py` — фичи
+- `src/eda.py` — разведочный анализ
+- `src/baselines.py` — бейзлайны
+- `src/catboost_full.py` — CatBoost (MLмодель)
+- `src/lstm_model.py` — LSTM (DLмодель)
+- `src/error_analysis.py` — анализ ошибок
+- `src/make_submission.py` — сам submission
+- `src/run_experiment.py` — точка входа
+
+## главная метрика
+
+RMSLE — как в соревновании kaggle.
